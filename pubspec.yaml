@@ -1,0 +1,27 @@
+name: sistema_de_ventas
+description: "Sistema de ventas móvil"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.1
+  http: ^1.1.0              # ✅ AGREGAR - Para llamadas HTTP
+  shared_preferences: ^2.2.2 # ✅ AGREGAR - Para almacenamiento local
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/logos/
+    - assets/images/backgrounds/
+    - assets/images/icons/
