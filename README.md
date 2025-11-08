@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # sistema_de_ventas
 
 A new Flutter project.
@@ -14,3 +15,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# mi-app-flutter
+App del proyecto Kontrol+
+>>>>>>> 365b0d4a6bf767775174eef2de445b95413948b7
