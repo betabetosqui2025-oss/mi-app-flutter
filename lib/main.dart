@@ -13,16 +13,7 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => authService,
-      child: const MyApp(),
+      child: const App(),
     ),
   );
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const App();
-  }
 }

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sistema_de_ventas/shared/models/product_model.dart';
+import 'package:sistema_de_ventas/shared/models/inventory_response.dart';
 
 class ApiService {
   // Para evitar problemas de CORS, usamos 127.0.0.1 en lugar de localhost
@@ -145,6 +147,104 @@ class ApiService {
       }
     } else {
       throw Exception('Error al cargar clientes: ${response.statusCode}');
+    }
+  }
+
+  // ==================== 📱 INVENTARIO INTELIGENTE - KONTROL+ ====================
+
+  /// 🔍 Buscar producto por código de barras
+  /// Retorna el producto si existe, null si no se encuentra
+  static Future<Producto?> buscarPorCodigoBarras(String codigoBarras) async {
+    try {
+      print('🔍 Buscando producto con código: $codigoBarras');
+      final response = await get('/api/mobile/inventory/barcode/$codigoBarras');
+      
+      if (response.statusCode == 200) {
+        print('✅ Producto encontrado');
+        return Producto.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        print('❌ Producto no encontrado');
+        return null;
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error en buscarPorCodigoBarras: $e');
+      rethrow;
+    }
+  }
+
+  /// 📊 Obtener información completa de stock de un producto
+  static Future<InventoryProductResponse> obtenerStockProducto(String productoId) async {
+    try {
+      print('📊 Obteniendo stock para producto: $productoId');
+      final response = await get('/api/mobile/inventory/stock/$productoId');
+      
+      if (response.statusCode == 200) {
+        print('✅ Stock obtenido correctamente');
+        return InventoryProductResponse.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        throw Exception('Producto no encontrado');
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error en obtenerStockProducto: $e');
+      rethrow;
+    }
+  }
+
+  /// 📈 Obtener lista de productos con stock bajo
+  /// Útil para alertas y reabastecimiento
+  static Future<List<LowStockProduct>> obtenerStockBajo() async {
+    try {
+      print('📈 Obteniendo productos con stock bajo');
+      final response = await get('/api/mobile/inventory/low-stock');
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+        final productos = jsonList.map((json) => LowStockProduct.fromJson(json)).toList();
+        print('✅ ${productos.length} productos con stock bajo encontrados');
+        return productos;
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error en obtenerStockBajo: $e');
+      rethrow;
+    }
+  }
+
+  /// 🔄 Búsqueda flexible por nombre o código de barras
+  /// Ideal para búsqueda rápida en la app
+  static Future<List<Producto>> buscarProductosFlexible(String termino) async {
+    try {
+      print('🔄 Búsqueda flexible: $termino');
+      final response = await get('/api/mobile/inventory/search/$termino');
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+        final productos = jsonList.map((json) => Producto.fromJson(json)).toList();
+        print('✅ ${productos.length} productos encontrados');
+        return productos;
+      } else {
+        throw Exception('Error del servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error en buscarProductosFlexible: $e');
+      rethrow;
+    }
+  }
+
+  /// 📋 Contar productos con stock bajo
+  /// Para mostrar badge en el dashboard
+  static Future<int> contarStockBajo() async {
+    try {
+      final productos = await obtenerStockBajo();
+      return productos.length;
+    } catch (e) {
+      print('❌ Error contando stock bajo: $e');
+      return 0;
     }
   }
 }

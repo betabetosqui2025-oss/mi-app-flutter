@@ -1,33 +1,34 @@
 class Producto {
-  final String id;
-  final String nombre;
-  final String descripcion;
-  final double precio;
-  final String categoria;
-  final String codigoBarras;
+  final String? id;
+  final String? nombre;
+  final String? descripcion;
+  final double? precio;          // ← CAMBIADO: de "precioVenta" a "precio"
+  final String? categoria;
+  final String? codigoBarras;
   final String? imagenUrl;
-  final bool activo;
+  final bool? activo;            // ← NUEVO CAMPO
+  // ELIMINADO: stockActual, stockMinimo, precioCompra
 
   Producto({
-    required this.id,
-    required this.nombre,
-    required this.descripcion,
-    required this.precio,
-    required this.categoria,
-    required this.codigoBarras,
+    this.id,
+    this.nombre,
+    this.descripcion,
+    this.precio,                 // ← CAMBIADO
+    this.categoria,
+    this.codigoBarras,
     this.imagenUrl,
-    required this.activo,
+    this.activo,                 // ← NUEVO
   });
 
   factory Producto.fromJson(Map<String, dynamic> json) {
     return Producto(
-      id: json['id'] ?? '',
-      nombre: json['nombre'] ?? '',
+      id: json['id']?.toString(),
+      nombre: json['nombre'] ?? 'Sin nombre',
       descripcion: json['descripcion'] ?? '',
       precio: (json['precio'] is double) 
           ? json['precio'] 
           : double.tryParse(json['precio']?.toString() ?? '0') ?? 0.0,
-      categoria: json['categoria'] ?? '',
+      categoria: json['categoria'] ?? 'General',
       codigoBarras: json['codigoBarras'] ?? '',
       imagenUrl: json['imagenUrl'],
       activo: json['activo'] ?? true,
@@ -47,5 +48,8 @@ class Producto {
     };
   }
 
-  String get precioFormateado => '\$${precio.toStringAsFixed(2)}';
+  String get precioFormateado => '\$${precio?.toStringAsFixed(2) ?? '0.00'}';
+  
+  // NOTA: No hay stockActual en el modelo Spring Boot
+  // El stock viene del Inventario (tabla separada)
 }

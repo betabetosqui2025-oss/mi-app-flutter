@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sistema_de_ventas/core/services/auth_service.dart';
 import 'package:sistema_de_ventas/core/services/api_service.dart';
+import 'package:sistema_de_ventas/app/routes.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -13,6 +14,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int totalProductos = 0;
   int totalClientes = 0;
+  int stockBajo = 0;
   bool isLoading = true;
   String errorMessage = '';
 
@@ -26,16 +28,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       print('🔄 Cargando datos del dashboard...');
       
-      // ✅ CARGAR DATOS CON MANEJO DE ERRORES MEJORADO
+      // ✅ CARGAR DATOS REALES + STOCK BAJO
       final productos = await ApiService.obtenerProductosTemp();
       final clientes = await ApiService.obtenerClientesTemp();
+      final stockBajoCount = await ApiService.contarStockBajo();
 
       print('✅ Productos cargados: ${productos.length}');
       print('✅ Clientes cargados: ${clientes.length}');
+      print('✅ Stock bajo: $stockBajoCount productos');
 
       setState(() {
         totalProductos = productos.length;
         totalClientes = clientes.length;
+        stockBajo = stockBajoCount;
         isLoading = false;
         errorMessage = '';
       });
@@ -68,8 +73,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard Sistema Ventas'),
-        backgroundColor: Colors.blue,
+        title: const Text('Dashboard KONTROL+'),
+        backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -88,7 +93,183 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? _buildLoadingIndicator()
           : errorMessage.isNotEmpty
               ? _buildErrorWidget()
-              : _buildDashboardContent(),
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Bienvenida
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.blue.shade100,
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '¡Bienvenido/a!',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Sistema de Ventas Móvil',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Métricas con datos REALES
+                      const Text(
+                        'Resumen en Tiempo Real',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Grid de métricas con datos REALES
+                      GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        children: [
+                          _buildMetricCard('Productos', totalProductos.toString(), Icons.inventory_2, Colors.blue),
+                          _buildMetricCard('Clientes', totalClientes.toString(), Icons.people, Colors.green),
+                          _buildMetricCard('Ventas Hoy', '0', Icons.shopping_cart, Colors.orange),
+                          _buildMetricCard('Stock Bajo', stockBajo.toString(), Icons.warning, Colors.red),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Acciones rápidas
+                      const Text(
+                        'Acciones Rápidas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          ActionChip(
+                            avatar: const Icon(Icons.inventory_2, color: Colors.white, size: 16),
+                            label: const Text('Ver Productos'),
+                            backgroundColor: Colors.blue,
+                            onPressed: () {
+                              Navigator.pushNamed(context, AppRoutes.products);
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.people, color: Colors.white, size: 16),
+                            label: const Text('Ver Clientes'),
+                            backgroundColor: Colors.green,
+                            onPressed: () {
+                              Navigator.pushNamed(context, AppRoutes.clients);
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.warehouse, color: Colors.white, size: 16),
+                            label: const Text('Inventario'),
+                            backgroundColor: Colors.orange,
+                            onPressed: () {
+                              Navigator.pushNamed(context, AppRoutes.inventory);
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.add_shopping_cart, color: Colors.white, size: 16),
+                            label: const Text('Nueva Venta'),
+                            backgroundColor: Colors.purple,
+                            onPressed: () {
+                              Navigator.pushNamed(context, AppRoutes.pos);
+                            },
+                          ),
+                        ],
+                      ),
+
+                      // ✅ BOTÓN DESTACADO PARA INVENTARIO INTELIGENTE
+                      const SizedBox(height: 24),
+                      Card(
+                        color: Colors.blue.shade50,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.auto_awesome, color: Colors.blue),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Nueva Funcionalidad',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Inventario Inteligente con alertas de stock bajo',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, AppRoutes.inventory);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue.shade700,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.qr_code_scanner),
+                                    SizedBox(width: 8),
+                                    Text('Probar Inventario Inteligente'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
     );
   }
 
@@ -121,10 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton(
-                  onPressed: () {
-                    // Probar conexión básica
-                    _probarConexion();
-                  },
+                  onPressed: _probarConexion,
                   child: const Text('Probar Conexión'),
                 ),
               ],
@@ -152,100 +330,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       );
     }
-  }
-
-  Widget _buildDashboardContent() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Bienvenida
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.green, size: 40),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '¡Conexión Exitosa!',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Datos en tiempo real',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Métricas con datos REALES
-          const Text(
-            'Resumen en Tiempo Real',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Grid de métricas con datos REALES
-          GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            children: [
-              _buildMetricCard('Productos', totalProductos.toString(), Icons.inventory_2, Colors.blue),
-              _buildMetricCard('Clientes', totalClientes.toString(), Icons.people, Colors.green),
-              _buildMetricCard('Ventas Hoy', '0', Icons.shopping_cart, Colors.orange),
-              _buildMetricCard('Stock Bajo', '0', Icons.warning, Colors.red),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // Información de conexión
-          Card(
-            color: Colors.green.shade50,
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                children: [
-                  Icon(Icons.cloud_done, color: Colors.green.shade600),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Conectado al servidor local',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildMetricCard(String title, String value, IconData icon, Color color) {

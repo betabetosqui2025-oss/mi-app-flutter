@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:sistema_de_ventas/core/services/auth_service.dart';
 import 'package:sistema_de_ventas/features/auth/login_screen.dart';  
 import 'package:sistema_de_ventas/features/dashboard/dashboard_screen.dart';
+import 'package:sistema_de_ventas/features/inventory/inventory_screen.dart';
+import 'package:sistema_de_ventas/features/products/products_screen.dart';
+import 'package:sistema_de_ventas/features/clients/clients_screen.dart';
+import 'package:sistema_de_ventas/features/sales/pos_screen.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -12,12 +16,21 @@ class App extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => AuthService(),
       child: MaterialApp(
-        title: 'Sistema de Ventas',
+        title: 'KONTROL+ - Sistema de Ventas',
         theme: ThemeData(
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
         home: const AppContent(),
+        // ✅ AGREGAR RUTAS NOMBRADAS PARA QUE FUNCIONEN LOS ACTIONCHIPS
+        routes: {
+          '/dashboard': (context) => const DashboardScreen(),
+          '/inventory': (context) => const InventoryScreen(),
+          '/products': (context) => const ProductsScreen(),
+          '/clients': (context) => const ClientsScreen(),
+          '/pos': (context) => const PosScreen(),
+        },
+        debugShowCheckedModeBanner: false,
       ),
     );
   }
@@ -28,10 +41,18 @@ class AppContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context);  
-    
-    return authService.isAuthenticated
-        ? const DashboardScreen()
-        : const LoginScreen();
+    return Consumer<AuthService>(
+      builder: (context, authService, child) {
+        print('🔄 AppContent reconstruido - Autenticado: ${authService.isAuthenticated}');
+        
+        if (authService.isAuthenticated) {
+          print('✅ Redirigiendo al Dashboard...');
+          return const DashboardScreen();
+        } else {
+          print('🔐 Mostrando Login...');
+          return const LoginScreen();
+        }
+      },
+    );
   }
 }

@@ -11,8 +11,14 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   provider: ^6.1.1
-  http: ^1.1.0              # ✅ AGREGAR - Para llamadas HTTP
-  shared_preferences: ^2.2.2 # ✅ AGREGAR - Para almacenamiento local
+  http: ^1.1.0              # ✅ PARA LLAMADAS HTTP
+  shared_preferences: ^2.2.2 # ✅ PARA ALMACENAMIENTO LOCAL
+  
+  # 📱 INVENTARIO INTELIGENTE - KONTROL+
+  mobile_scanner: ^4.0.1    # ✅ VERSIÓN CORRECTA - ESCÁNER CÓDIGOS BARRAS
+  camera: ^0.10.5           # ✅ CÁMARA
+  image_picker: ^1.0.4      # ✅ SELECCIÓN IMÁGENES
+  permission_handler: ^11.0.1 # ✅ MANEJO PERMISOS
 
 dev_dependencies:
   flutter_test:

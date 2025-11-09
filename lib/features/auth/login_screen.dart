@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     
     if (result['success'] == true) {
-      // Login exitoso - la navegación se maneja automáticamente por AppContent
+      // ✅ Login exitoso - AppContent redirigirá automáticamente al Dashboard
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message']),
